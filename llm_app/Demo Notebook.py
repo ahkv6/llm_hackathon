@@ -26,13 +26,13 @@ from agent import PdfSummaryAgent
 
 # COMMAND ----------
 
-model = "gpt-3.5-turbo-0613"
-pdf_agent = PdfSummaryAgent(model)
+#model = "gpt-3.5-turbo-0613"
+pdf_agent = PdfSummaryAgent()
 
 # COMMAND ----------
 
 pdf_dict = {"Macquarie" : "data/annualreport.pdf",
-                   # "Henkel": "data/OTC_HENKY_2022.pdf"
+                    "Henkel": "data/OTC_HENKY_2022.pdf"
                     }
 
 # COMMAND ----------
