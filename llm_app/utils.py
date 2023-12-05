@@ -10,22 +10,35 @@ from llama_index.response import Response
 from llama_index.callbacks import CallbackManager
 from llama_index.callbacks.schema import CBEventType, EventPayload
 from llama_index.postprocessor import MetadataReplacementPostProcessor
+from llama_index.prompts import PromptTemplate
 
-from templates import prompt_template_str, summary_title, response_template
+from templates import (
+    prompt_template_str,
+    summary_title,
+    response_template,
+    query_template,
+)
 
 INDEX = "index"
 QUERY_ENGINE = "query_engine"
 
+prompt_template = PromptTemplate(prompt_template_str)
+
 
 def get_query_engine(index, verbose: bool = False):
     """Create and return a query engine based on the given index."""
-    return index.as_query_engine(
+    query_engine = index.as_query_engine(
         similarity_top_k=2,
         verbose=verbose,
         node_postprocessors=[
             MetadataReplacementPostProcessor(target_metadata_key="window")
         ],
     )
+
+    query_engine.update_prompts(
+        {"response_synthesizer:text_qa_template": prompt_template}
+    )
+    return query_engine
 
 
 def get_chat_engine_tools(index_info: dict, service_context, verbose: bool = False):
@@ -106,7 +119,6 @@ def generate_responses(
     engine,
     llama_debug: CallbackManager,
     topic_questions: dict,
-    template: str = prompt_template_str,
 ):
     """
     Generates responses on questions in the topic_questions dict over the provided index,
@@ -115,10 +127,9 @@ def generate_responses(
     responses = {}
 
     for prompt_topic, questions in topic_questions.items():
-        prompt_template = PromptTemplate(template=template)
-        fmt_prompt = prompt_template.format(topic=prompt_topic, questions=questions)
+        query = query_template.format(topic=prompt_topic, questions=questions)
 
-        response = engine.query(fmt_prompt)
+        response = engine.query(query)
 
         responses[prompt_topic] = {}
 

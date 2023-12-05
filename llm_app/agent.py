@@ -21,18 +21,21 @@ from utils import (
 
 GPT4 = "gpt-4-1106-preview"
 
+from llama_index.callbacks import CallbackManager, WandbCallbackHandler
+
 
 class PdfSummaryAgent:
-    def __init__(self, openai_model: str = GPT4,print_trace: bool = False):
+    def __init__(self, openai_model: str = GPT4, print_trace: bool = False):
         """
         Initializes the PDF Summary Agent with a specified language model.
 
         Args:
-            openai_model (str): Identifier for the language model to be used. Defaults to 'gpt-4-1106-preview'.
+            openai_model (str): Identifier for the language model to be used.
+             Defaults to 'gpt-4-1106-preview'.
         """
-        self._init_llama(openai_model=openai_model,print_trace=print_trace)
+        self._init_llama(openai_model=openai_model, print_trace=print_trace)
 
-    def _init_llama(self, openai_model: str = GPT4,print_trace: bool = False):
+    def _init_llama(self, openai_model: str = GPT4, print_trace: bool = False):
         """
         Initializes Llama index with the specified model.
 
@@ -41,13 +44,16 @@ class PdfSummaryAgent:
         """
         self.embed_model = OpenAIEmbedding(embed_batch_size=10)
         self.llm = OpenAI(model=openai_model, temperature=0.1)
-        self.llama_debug = LlamaDebugHandler(print_trace_on_end=print_trace)
+        wandb_args = {"project": "llama-index-report"}
+        self.llama_debug = WandbCallbackHandler(run_args=wandb_args)
+        # self.llama_debug = LlamaDebugHandler(print_trace_on_end=print_trace)
         self.callback_manager = CallbackManager([self.llama_debug])
         self.service_context = ServiceContext.from_defaults(
             llm=self.llm,
             callback_manager=self.callback_manager,
             embed_model=self.embed_model,
         )
+
     def load_pdfs(self, pdfs: dict[str, str], load_saved: bool = False):
         """
         Loads PDFs and prepares their indexes for query processing.
@@ -125,7 +131,7 @@ class PdfSummaryAgent:
             display(Markdown(full_response))
         return summary_title
 
-    def get_chat_engine(self,model:str=GPT4, verbose: bool = False):
+    def get_chat_engine(self, model: str = GPT4, verbose: bool = False):
         """
         Creates a chat engine for interactive queries.
 

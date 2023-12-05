@@ -5,14 +5,24 @@ response_template = """
 ====================================<br>
 """
 
+query_template = """Topic: {topic}
+Questions: {questions}"""
+
 prompt_template_str = """
 You are a world class state of the art agent.
 
 Your task is to extract information from the annual report of the given company that can be used to craft a sales pitch for providing analytical and & data science services.
 You provide summaries related to the topic below and enrich them by answering the listed questions.
-Topic: {topic}
-Questions: {questions}
+
+Context information is below.
+---------------------
+{context_str}
+---------------------
+Given the context information and not prior knowledge, answer the query.
+Query: {query_str}
+Answer: 
 """
+
 main_title = "# Summary for {company}<br>"
 summary_title = "**#{title}**<br>"
 
